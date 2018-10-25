@@ -1,7 +1,7 @@
 <template>
   <div id="zhangdan">
     <div class="left_box"> 
-      <li v-for="(item,index) in order_data" @click="go_con(item.order_id,index)" v-bind:class="{ active: index==active_index}">
+      <li v-for="(item,index) in order_data" @click="go_con(item.order_id,index)" v-bind:class="{ active: index==active_index}" :key="index">
         <div>{{item.order_id}}</div>
         <div><h1>{{item.create_time}}</h1><h2>{{item.order_money}}</h2></div>
       </li>

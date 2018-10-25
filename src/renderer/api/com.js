@@ -1,7 +1,7 @@
 var haXNs = 'GFzbzAyMTkzb2FzamRkOTA4dTJuYm5jc2FuODMyaGFkMjFk';
 import md5 from 'js-md5';
 const comjs = {
-
+    commerImg:'http://apipay.essnn.com/'
 }
 
 comjs.addmi = function(tag) {

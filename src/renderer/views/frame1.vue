@@ -8,7 +8,7 @@
                 <span>金额</span>
                 <span></span>
             </li>
-            <li v-for="(item,index) in shop_data" class='clearfix'>
+            <li v-for="(item,index) in shop_data" class='clearfix' :key="item">
                 <span>{{item.item_name}}</span>
                 <span><i v-on:click="item.active_num>1?item.active_numactive_num-=1:item.active_numactive_num">-</i><a>{{item.active_num}}</a><i v-on:click="item.active_num+=1">+</i></span>
                 <span>{{item.item_money}}</span>
@@ -23,12 +23,12 @@
         <div class="right">
             <nav>
                 <a @click="go_nav('all')" v-bind:class="{ active: show_all }">全部</a>
-                <a v-for="(item,index) in nav_data" @click="go_nav(index)" v-bind:class="{ active: item.isActive }">{{item.class_name}}</a>
+                <a v-for="(item,index) in nav_data" @click="go_nav(index)" v-bind:class="{ active: item.isActive }" :key="item.class_name">{{item.class_name}}</a>
             </nav>
             <el-row>
-              <el-col :span="6" v-for="(item,index) in item_data" v-show="item.show_state" >
+              <el-col :span="6" v-for="(item,index) in item_data" v-show="item.show_state" :key="index">
                 <div class="grid-content bg-purple clearfix" v-on:click="add_item(item)">
-                    <span v-bind:style="{backgroundImage:'url(http://apipay.essnn.com/' + item.item_img + ')'}"><h1 v-if="item.active_num > 0">{{item.active_num}}</h1></span>
+                    <span v-bind:style="{backgroundImage:'url('+ item.item_img + ')'}"><h1 v-if="item.active_num > 0">{{item.active_num}}</h1></span>
                     <div class="box">
                         <div class="name">{{item.item_name}}</div>
                         <div class="money">{{item.item_money}}</div>
@@ -42,8 +42,8 @@
             <h1 class="heji">合计：{{heji_money}}</h1>
           </div>
           <div>
-            <button v-on:click="xianjin">现金收款</button>
-            <button v-on:click="saoma">扫码收款</button>
+            <button v-on:click="jiezhang('xianjinpay')">现金收款</button>
+            <button v-on:click="jiezhang('saoma')">扫码收款</button>
           </div>
         </footer>
     </div>
@@ -64,6 +64,8 @@ export default {
         for (var i = res["data"]["itemArr"].length - 1; i >= 0; i--) {
           res["data"]["itemArr"][i]["active_num"] = 0;
           res["data"]["itemArr"][i]["show_state"] = true;
+          res["data"]["itemArr"][i]["item_img"] =
+            this.$comjs.commerImg + res["data"]["itemArr"][i]["item_img"];
         }
         for (var i = res["data"]["classArr"].length - 1; i >= 0; i--) {
           res["data"]["classArr"][i]["isActive"] = false;
@@ -79,22 +81,21 @@ export default {
       shop_data: [],
       item_data: "",
       nav_data: "",
-      show_all:true,
+      show_all: true
     };
   },
   mounted() {
     this.$bus.$on("pay_success", res => {
       this.shop_data = [];
       for (let index = 0; index < this.item_data.length; index++) {
-        this.item_data[index]['active_num'] = 0
+        this.item_data[index]["active_num"] = 0;
       }
-      // this.item_data = item_data; 
     });
   },
   methods: {
     go_nav: function(index) {
       for (let i = 0; i < this.nav_data.length; i++) {
-        this.nav_data[i]['isActive'] = false;    
+        this.nav_data[i]["isActive"] = false;
       }
       if (index == "all") {
         for (var i = this.item_data.length - 1; i >= 0; i--) {
@@ -112,8 +113,7 @@ export default {
           this.item_data[i]["show_state"] = false;
         }
       }
-      this.nav_data[index]['isActive'] = true;   
-      
+      this.nav_data[index]["isActive"] = true;
     },
     remove: function(event) {
       for (var i = this.item_data.length - 1; i >= 0; i--) {
@@ -147,7 +147,7 @@ export default {
         this.shop_data.push(data);
       }
     },
-    xianjin: function() {
+    jiezhang: function(type) {
       if (this.shop_data.length == 0) {
         this.$alert("请先选择商品", "收款提示", {
           confirmButtonText: "确定",
@@ -183,27 +183,28 @@ export default {
         if (res["state"] == 51) {
           var data = {
             heji_money: this.heji_money,
-            order_id:order_id,
+            order_id: order_id
           };
-          this.$bus.$emit("xianjinpay", data);
+          this.$bus.$emit(type, data);
         } else {
           this.$message.error(res["Msg"]);
         }
       });
-    },
-    saoma: function() {
-      if (this.shop_data.length == 0) {
-        this.$alert("请先选择商品", "收款提示", {
-          confirmButtonText: "确定",
-          callback: action => {}
-        });
-        return;
-      }
-      var data = {
-        heji_money: this.heji_money
-      };
-      this.$bus.$emit("saoma", data);
     }
+    // saoma: function() {
+    //   if (this.shop_data.length == 0) {
+    //     this.$alert("请先选择商品", "收款提示", {
+    //       confirmButtonText: "确定",
+    //       callback: action => {}
+    //     });
+    //     return;
+    //   }
+    //   var data = {
+    //     heji_money: this.heji_money,
+    //     order_id:order_id,
+    //   };
+    //   this.$bus.$emit("saoma", data);
+    // }
   },
   watch: {
     shop_data: {
