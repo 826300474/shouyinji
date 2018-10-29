@@ -4,9 +4,9 @@
 		  <h1>{{mer_no}}</h1>
 		  <div @click="shouyin">收银</div>
 		  <div @click="zhangdan">账单</div>
-		  <div @click="huiyuan">会员</div>
+		  <!-- <div @click="addgood">添加商品</div> -->
 	  </div>
-      <div class="shouyinyuan">收银员：{{waiter_no}}</div>
+      <div class="shouyinyuan" @click="tuichu">收银员：{{waiter_no}}</div>
     </header>
 </template>
 <script>
@@ -27,8 +27,8 @@ export default {
 		shouyin:function(){
 			this.$router.push("/main/");	
 		},
-		huiyuan:function(){
-
+		tuichu:function(){
+			this.$router.replace("/");	
 		}
     },
 }

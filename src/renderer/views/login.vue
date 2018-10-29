@@ -29,6 +29,14 @@ export default {
       this.form.mer_no = this.$locs.get("mer_no");
     }
   },
+  mounted(){
+    var _this = this;
+    document.onkeyup = function (e) {
+        if(e.key == 'Enter'){
+          _this.denglu();
+        }
+    }
+  },
   data() {
     return {
       form: {

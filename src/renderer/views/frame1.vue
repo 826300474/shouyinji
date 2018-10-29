@@ -8,16 +8,21 @@
                 <span>金额</span>
                 <span></span>
             </li>
-            <li v-for="(item,index) in shop_data" class='clearfix' :key="item">
+            <li v-for="(item,index) in shop_data" class='clearfix' :key="item.item_no">
                 <span>{{item.item_name}}</span>
                 <span><i v-on:click="item.active_num>1?item.active_numactive_num-=1:item.active_numactive_num">-</i><a>{{item.active_num}}</a><i v-on:click="item.active_num+=1">+</i></span>
                 <span>{{item.item_money}}</span>
                 <span>{{item.item_money*item.active_num | keeptwonum}}</span>
-                <span><i v-on:click="remove(index)">+</i></span>
+                <span><i class="el-icon-delete" v-on:click="remove(index)"></i></span>
             </li>
             <div class="btn_box">
-                <button v-on:click="clear">清空</button>
-                <button>挂单</button>
+                <div v-if="this.shop_data.length==0">
+                  <button style="width:100%;">取单（{{guadan_data.length}}）</button>
+                </div>
+                <div v-if="this.shop_data.length>0">
+                  <button v-on:click="clear" style="width:50%;">清空</button>
+                  <button style="width:50%;" @click="guadan">挂单</button>
+                </div>
             </div>
         </div>
         <div class="right">
@@ -25,8 +30,8 @@
                 <a @click="go_nav('all')" v-bind:class="{ active: show_all }">全部</a>
                 <a v-for="(item,index) in nav_data" @click="go_nav(index)" v-bind:class="{ active: item.isActive }" :key="item.class_name">{{item.class_name}}</a>
             </nav>
-            <el-row>
-              <el-col :span="6" v-for="(item,index) in item_data" v-show="item.show_state" :key="index">
+            <el-row :gutter="10">
+              <el-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-for="(item,index) in item_data" v-show="item.show_state" :key="index">
                 <div class="grid-content bg-purple clearfix" v-on:click="add_item(item)">
                     <span v-bind:style="{backgroundImage:'url('+ item.item_img + ')'}"><h1 v-if="item.active_num > 0">{{item.active_num}}</h1></span>
                     <div class="box">
@@ -36,6 +41,12 @@
                 </div>
               </el-col>
             </el-row>
+            <div class="btn_box">
+              <el-input placeholder="输入商品关键字" prefix-icon="el-icon-search" v-model="search" @keyup.enter.native="gosearch">
+                <div slot="append" @click="gosearch">搜索</div>
+              </el-input>
+              <el-button type="primary" @click="addgood" icon="el-icon-goods">添加商品</el-button>
+            </div>
         </div>
         <footer>
           <div>
@@ -81,7 +92,9 @@ export default {
       shop_data: [],
       item_data: "",
       nav_data: "",
-      show_all: true
+      show_all: true,
+      search:'',
+      guadan_data:this.$store.state.guadan.guadan_data,
     };
   },
   mounted() {
@@ -91,8 +104,34 @@ export default {
         this.item_data[index]["active_num"] = 0;
       }
     });
+    this.$bus.$on("get_item", res => {
+      this.add_item(res);
+    });
+    this.$bus.$on("guadan_ok", res => {
+      this.clear();
+    });
   },
   methods: {
+    guadan:function(){
+      this.$bus.$emit('guadan_show',this.shop_data);   
+    },
+    gosearch:function(){
+      if(!this.search){
+        this.$message({
+          message: '请先输入关键词',
+          type: 'warning'
+        });
+        return;
+      }
+      var data = {
+        text:this.search,
+        item_data:this.item_data
+      }
+      this.$bus.$emit('search_show',data); 		  
+    },
+    addgood:function(){
+			this.$bus.$emit('addgoods',this.nav_data); 		
+		},
     go_nav: function(index) {
       for (let i = 0; i < this.nav_data.length; i++) {
         this.nav_data[i]["isActive"] = false;
@@ -222,18 +261,21 @@ export default {
 };
 </script>
 <style>
+#shop .el-input{
+  width: 260px;
+}
+#shop .el-input .el-input-group__append{
+  cursor: pointer;
+}
 .el-row {
   overflow-y: auto;
   position: absolute;
-  top: 20px;
-  left: 120px;
-  right: 20px;
-  bottom: 20px;
+  top: 10px;
+  left: 110px;
+  right: 10px;
+  bottom: 50px;
 }
 .right {
-  padding: 20px;
-  padding-left: 120px;
-  padding-right: 0;
   background-color: #fafafa;
 }
 
@@ -241,8 +283,23 @@ export default {
   position: fixed;
   top: 66px;
   left: 400px;
-  bottom: 60px;
+  bottom: 110px;
   background-color: #ffffff;
+}
+
+.right .btn_box{
+  position: fixed;
+  bottom: 60px;
+  right: 0;
+  background: #fff;
+  height: 40px;
+  padding: 5px;
+  left: 400px;
+  border-top: solid 1px #dcdfe6;
+}
+
+.right .btn_box .el-button{
+  float: right;
 }
 
 .right nav a {
@@ -265,10 +322,8 @@ export default {
 }
 
 .right .grid-content {
-  /*    background-color: #fff;*/
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   cursor: pointer;
-  padding-right: 20px;
 }
 
 .right .grid-content span {
@@ -298,6 +353,8 @@ export default {
   position: relative;
   z-index: -1;
 }
+
+
 
 .right .grid-content .box .money {
   position: absolute;
@@ -385,11 +442,6 @@ export default {
 .left li span:last-child i {
   background-color: red;
   border-color: red;
-  transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  -moz-transform: rotate(45deg);
-  -webkit-transform: rotate(45deg);
-  -o-transform: rotate(45deg);
 }
 
 .left .btn_box {
@@ -399,8 +451,7 @@ export default {
   width: 400px;
 }
 
-.left .btn_box button {
-  width: 50%;
+.left .btn_box div:last-child button {
   text-align: center;
   line-height: 50px;
   float: left;
