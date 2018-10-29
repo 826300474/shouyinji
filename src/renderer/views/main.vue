@@ -7,6 +7,7 @@
      <addgood-view />
      <search-view />
      <guadan-view />
+     <qudan-view />
   </div>
 </template>
 <script>
@@ -16,6 +17,7 @@
   import AddgoodView from '../components/Addgood/'
   import SearchView from '../components/Search/'
   import GuadanView from '../components/Guadan/'
+  import QudanView from '../components/Qudan/'
   export default {
     name: 'main',
     methods: {
@@ -27,7 +29,8 @@
       PaysaoView,
       AddgoodView,
       SearchView,
-      GuadanView
+      GuadanView,
+      QudanView
     },
     data () {
       return {

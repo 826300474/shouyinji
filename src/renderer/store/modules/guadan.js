@@ -7,6 +7,9 @@ export default {
         SET_GUADAN_DATA: (state, data) => {
             state.guadan_data.push(JSON.stringify(data));
         },
+        DEL_GUADAN_DATA: (state, data) => {
+            state.guadan_data.splice(data,1) 
+        },
     },
     actions: {
         SET_GUADAN({
@@ -14,6 +17,12 @@ export default {
             state
         }, res) {
             commit("SET_GUADAN_DATA", res);
-        }
+        },
+        DEL_GUADAN({
+            commit,
+            state
+        }, res) {
+            commit("DEL_GUADAN_DATA", res);
+        },
     }
 }

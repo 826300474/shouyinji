@@ -17,7 +17,7 @@
             </li>
             <div class="btn_box">
                 <div v-if="this.shop_data.length==0">
-                  <button style="width:100%;">取单（{{guadan_data.length}}）</button>
+                  <button style="width:100%;" @click="qudan">取单（{{guadan_data.length}}）</button>
                 </div>
                 <div v-if="this.shop_data.length>0">
                   <button v-on:click="clear" style="width:50%;">清空</button>
@@ -110,10 +110,23 @@ export default {
     this.$bus.$on("guadan_ok", res => {
       this.clear();
     });
+    this.$bus.$on("qudan_ok", res => {
+      this.shop_data = res; 
+      this.shop_data.forEach(element => {
+        this.item_data.forEach(element1 => {
+          if(element['item_no'] == element1['item_no']){
+            element1['active_num'] = element['active_num']   
+          }
+        });  
+      });
+    });
   },
   methods: {
     guadan:function(){
       this.$bus.$emit('guadan_show',this.shop_data);   
+    },
+    qudan:function(){
+      this.$bus.$emit('qudan_show');   
     },
     gosearch:function(){
       if(!this.search){
@@ -172,13 +185,13 @@ export default {
     },
     add_item: function(data) {
       var shop_data = this.shop_data;
-      if (shop_data.length > 0) {
+      if (shop_data.length > 0) {  
         for (var i = shop_data.length - 1; i >= 0; i--) {
-          if (shop_data[i]["class_no"] == data["class_no"]) {
+          if (shop_data[i]["item_no"] == data["item_no"]) {
             shop_data[i]["active_num"]++;
             return;
           }
-        }
+        };
         data["active_num"]++;
         this.shop_data.push(data);
       } else {
