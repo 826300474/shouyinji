@@ -1,5 +1,5 @@
 <template>
-  <div id="main">
+  <div id="index">
      <footer-view />
      <router-view></router-view>
      <payxianjin-view />
@@ -19,7 +19,7 @@
   import GuadanView from '../components/Guadan/'
   import QudanView from '../components/Qudan/'
   export default {
-    name: 'main',
+    name: 'index',
     methods: {
       
     },
