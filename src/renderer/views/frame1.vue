@@ -8,7 +8,7 @@
                 <span>金额</span>
                 <span></span>
             </li>
-            <li v-for="(item,index) in shop_data" class='clearfix' :key="item.item_no">
+            <li v-for="(item,index) in item_data" class='clearfix' :key="index" v-if="item.active_num>0">
                 <span>{{item.item_name}}</span>
                 <span><i v-on:click="item.active_num>1?item.active_numactive_num-=1:item.active_numactive_num">-</i><a>{{item.active_num}}</a><i v-on:click="item.active_num+=1">+</i></span>
                 <span>{{item.item_money}}</span>
@@ -16,10 +16,10 @@
                 <span><i class="el-icon-delete" v-on:click="remove(index)"></i></span>
             </li>
             <div class="btn_box">
-                <div v-if="this.shop_data.length==0">
+                <div v-if="heji_money == 0 && guadan_data.length > 0">
                   <button style="width:100%;" @click="qudan">取单（{{guadan_data.length}}）</button>
                 </div>
-                <div v-if="this.shop_data.length>0">
+                <div v-if="heji_money > 0">
                   <button v-on:click="clear" style="width:50%;">清空</button>
                   <button style="width:50%;" @click="guadan">挂单</button>
                 </div>
@@ -28,7 +28,7 @@
         <div class="right">
             <nav>
                 <a @click="go_nav('all')" v-bind:class="{ active: show_all }">全部</a>
-                <a v-for="(item,index) in nav_data" @click="go_nav(index)" v-bind:class="{ active: item.isActive }" :key="item.class_name">{{item.class_name}}</a>
+                <a v-for="(item,index) in nav_data" @click="go_nav(index)" v-bind:class="{ active: item.isActive }" :key="index">{{item.class_name}}</a>
             </nav>
             <el-row :gutter="10">
               <el-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-for="(item,index) in item_data" v-show="item.show_state" :key="index">
@@ -88,21 +88,16 @@ export default {
   },
   data() {
     return {
-      heji_money: 0,
-      shop_data: [],
       item_data: "",
       nav_data: "",
       show_all: true,
-      search:'',
-      guadan_data:this.$store.state.guadan.guadan_data,
+      search: "",
+      guadan_data: this.$store.state.guadan.guadan_data
     };
   },
   mounted() {
     this.$bus.$on("pay_success", res => {
-      this.shop_data = [];
-      for (let index = 0; index < this.item_data.length; index++) {
-        this.item_data[index]["active_num"] = 0;
-      }
+      this.clear();
     });
     this.$bus.$on("get_item", res => {
       this.add_item(res);
@@ -111,40 +106,33 @@ export default {
       this.clear();
     });
     this.$bus.$on("qudan_ok", res => {
-      this.shop_data = res; 
-      this.shop_data.forEach(element => {
-        this.item_data.forEach(element1 => {
-          if(element['item_no'] == element1['item_no']){
-            element1['active_num'] = element['active_num']   
-          }
-        });  
-      });
+      this.item_data = res;
     });
   },
   methods: {
-    guadan:function(){
-      this.$bus.$emit('guadan_show',this.shop_data);   
+    guadan: function() {
+      this.$bus.$emit("guadan_show", this.item_data);
     },
-    qudan:function(){
-      this.$bus.$emit('qudan_show');   
+    qudan: function() {
+      this.$bus.$emit("qudan_show");
     },
-    gosearch:function(){
-      if(!this.search){
+    gosearch: function() {
+      if (!this.search) {
         this.$message({
-          message: '请先输入关键词',
-          type: 'warning'
+          message: "请先输入关键词",
+          type: "warning"
         });
         return;
       }
       var data = {
-        text:this.search,
-        item_data:this.item_data
-      }
-      this.$bus.$emit('search_show',data); 		  
+        text: this.search,
+        item_data: this.item_data
+      };
+      this.$bus.$emit("search_show", data);
     },
-    addgood:function(){
-			this.$bus.$emit('addgoods',this.nav_data); 		
-		},
+    addgood: function() {
+      this.$bus.$emit("addgoods", this.nav_data);
+    },
     go_nav: function(index) {
       for (let i = 0; i < this.nav_data.length; i++) {
         this.nav_data[i]["isActive"] = false;
@@ -168,55 +156,31 @@ export default {
       this.nav_data[index]["isActive"] = true;
     },
     remove: function(event) {
-      for (var i = this.item_data.length - 1; i >= 0; i--) {
-        if (
-          this.item_data[i]["class_no"] == this.shop_data[event]["class_no"]
-        ) {
-          this.item_data[i]["active_num"] = 0;
-        }
-      }
-      this.shop_data.splice(event, 1);
+      this.item_data[event]["active_num"] = 0;
     },
     clear: function() {
-      this.shop_data = [];
-      for (var i = this.item_data.length - 1; i >= 0; i--) {
-        this.item_data[i]["active_num"] = 0;
-      }
+      this.item_data.forEach(element => {
+        element["active_num"] = 0;
+      });
     },
     add_item: function(data) {
-      var shop_data = this.shop_data;
-      if (shop_data.length > 0) {  
-        for (var i = shop_data.length - 1; i >= 0; i--) {
-          if (shop_data[i]["item_no"] == data["item_no"]) {
-            shop_data[i]["active_num"]++;
-            return;
-          }
-        };
-        data["active_num"]++;
-        this.shop_data.push(data);
-      } else {
-        data["active_num"]++;
-        this.shop_data.push(data);
-      }
+      data["active_num"]++;
     },
     jiezhang: function(type) {
-      if (this.shop_data.length == 0) {
-        this.$alert("请先选择商品", "收款提示", {
-          confirmButtonText: "确定",
-          callback: action => {}
-        });
+      if (this.heji_money == 0) {
         return;
       }
       var order_arry = [];
-      for (var i = 0; i < this.shop_data.length; i++) {
-        var my_li = this.shop_data[i];
-        var item = {};
-        item["item_no"] = my_li["item_no"];
-        item["item_name"] = my_li["item_name"];
-        item["item_num"] = my_li["active_num"];
-        item["item_money"] = my_li["item_money"];
-        order_arry.push(item);
-      }
+      this.item_data.forEach(element => {
+        if (element["active_num"] > 0) {
+          var item = {};
+          item["item_no"] = element["item_no"];
+          item["item_name"] = element["item_name"];
+          item["item_num"] = element["active_num"];
+          item["item_money"] = element["item_money"];
+          order_arry.push(item);
+        }
+      });
       var order_id =
         "SC" + this.$comjs.getNowFormatDate() + this.$comjs.RndNum(5);
       var xinxi = {
@@ -258,26 +222,26 @@ export default {
     //   this.$bus.$emit("saoma", data);
     // }
   },
-  watch: {
-    shop_data: {
-      handler(val, oldVal) {
-        var money = 0;
-        var data = this.shop_data;
-        for (var i = data.length - 1; i >= 0; i--) {
-          money += data[i]["active_num"] * data[i]["item_money"];
-        }
-        this.heji_money = money.toFixed(2);
-      },
-      deep: true
+  computed: {
+    heji_money: function() {
+      var money = 0;
+      if (this.item_data.length > 0) {
+        this.item_data.forEach(element => {
+          if (element["active_num"] > 0) {
+            money += element["active_num"] * element["item_money"];
+          }
+        });
+      }
+      return money.toFixed(2);
     }
   }
 };
 </script>
 <style>
-#shop .el-input{
+#shop .el-input {
   width: 260px;
 }
-#shop .el-input .el-input-group__append{
+#shop .el-input .el-input-group__append {
   cursor: pointer;
 }
 .el-row {
@@ -300,7 +264,7 @@ export default {
   background-color: #ffffff;
 }
 
-.right .btn_box{
+.right .btn_box {
   position: fixed;
   bottom: 60px;
   right: 0;
@@ -311,7 +275,7 @@ export default {
   border-top: solid 1px #dcdfe6;
 }
 
-.right .btn_box .el-button{
+.right .btn_box .el-button {
   float: right;
 }
 
@@ -366,8 +330,6 @@ export default {
   position: relative;
   z-index: -1;
 }
-
-
 
 .right .grid-content .box .money {
   position: absolute;

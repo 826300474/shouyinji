@@ -110,7 +110,7 @@ export default {
       this.$api.post(commerhttp, xinxi).then(res => {
         if (res["state"] == 51) {
           res["data"]["order"]["order_item"].forEach(element => {
-            element.item_heji = element.item_num * element.item_money;
+            element.item_heji = (element.item_num * element.item_money).toFixed(2);
           });
           this.con_data = res["data"]["order"]["order_item"];
           this.order_con = res["data"]["order"];

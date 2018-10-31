@@ -5,8 +5,8 @@
 	    <el-form-item label="收款金额">
 	      <el-input v-model="form.shoukuan" disabled="disabled"></el-input>
 	    </el-form-item>
-		<el-form-item label="实收金额">
-	      <el-input v-model="form.shishou" v-focus="true" autofocus="true"></el-input>
+		  <el-form-item label="实收金额">
+	      <el-input v-model="form.shishou"></el-input>
 	    </el-form-item>
 	    <el-form-item label="找零">
 	      <el-input v-model="form.zhaoling" disabled="disabled"></el-input>
@@ -48,23 +48,23 @@ export default {
       dialogVisible: false,
       form: {
         shoukuan: 0,
-        shishou: '',
-        zhaoling: 0,
+        shishou: "",
+        zhaoling: 0
       },
-	  order_id: "",
-	  focus_btn:true
+      order_id: "",
+      focus_btn: true
     };
   },
   mounted() {
     this.$bus.$on("xianjinpay", res => {
       this.dialogVisible = true;
       this.form.shoukuan = res.heji_money;
-	  this.order_id = res.order_id;
-	});
+      this.order_id = res.order_id;
+    });
   },
   methods: {
     handleClose: function() {
-      this.form.shishou = '';
+      this.form.shishou = "";
       this.form.zhaoling = 0;
       this.dialogVisible = false;
     },
@@ -80,14 +80,14 @@ export default {
       var commerhttp = this.$comjs.gethttp();
       this.$api.post(commerhttp, xinxi).then(res => {
         if (res["state"] == 51) {
-		  this.$bus.$emit("pay_success");
+          this.$bus.$emit("pay_success");
           this.form.shishou = 0;
           this.form.zhaoling = 0;
           this.dialogVisible = false;
           this.$message({
             message: res["Msg"],
             type: "success"
-		  });
+          });
         } else {
           this.$message.error(res["Msg"]);
         }

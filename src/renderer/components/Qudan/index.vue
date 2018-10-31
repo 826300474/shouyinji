@@ -1,19 +1,12 @@
 <template>
   <div id="guadan">
       <el-dialog title="取单" :visible.sync="dialogVisible" width="1000px" :before-close="handleClose">
-        <div class="btn_box">
-          <el-button v-for="(item,index) in all_data" :key="index" @click="chang_item(index)">{{JSON.parse(item)['paihao']}}</el-button>
+        <div class="btn_box clearfix">
+          <span v-bind:class="{ active: index == del_index }" plain="true" v-for="(item,index) in all_data" :key="index" @click="chang_item(index)">{{JSON.parse(item)['paihao']}}</span>
         </div>
-        <!-- <el-tag
-          v-for="tag in all_data"
-          :key="tag"
-          @click="go"
-          closable>
-          {{JSON.parse(tag)['paihao']}}
-        </el-tag> -->
         <el-table
           :data="shop_data"
-          height="313"
+          height="288"
           border
           style="width: 100%">
           <el-table-column
@@ -33,6 +26,7 @@
             label="价格">
           </el-table-column>
         </el-table>
+        <p>备注：{{beizhu_data}}</p>
         <span slot="footer" class="dialog-footer">
           <el-button @click="dialogVisible = false">取 消</el-button>
           <el-button type="danger" @click="delete_item">删 除</el-button>
@@ -47,8 +41,9 @@ export default {
     return {
       dialogVisible: false,
       all_data: this.$store.state.guadan.guadan_data,
-      shop_data: "",
-      del_index: 0
+      shop_data: [],
+      del_index: 0,
+      beizhu_data: ""
     };
   },
   mounted() {
@@ -61,9 +56,17 @@ export default {
   methods: {
     chang_item: function(index) {
       this.del_index = index;
-      this.shop_data = JSON.parse(this.$store.state.guadan.guadan_data[index])[
+      var all_data = JSON.parse(this.$store.state.guadan.guadan_data[index])[
         "shop_data"
       ];
+      for (let i = 0; i < all_data.length; i++) {
+        if (all_data[i]["active_num"] >0 ) {
+          this.shop_data.push(all_data[i]);  
+        }
+      }
+      this.beizhu_data = JSON.parse(
+        this.$store.state.guadan.guadan_data[index]
+      )["beizhu"];
     },
     delete_item: function() {
       this.$confirm("您是否要删除此条挂单")
@@ -79,7 +82,9 @@ export default {
         .catch(_ => {});
     },
     onSubmit: function() {
-      this.$bus.$emit("qudan_ok", this.shop_data);
+      this.$bus.$emit("qudan_ok", JSON.parse(this.$store.state.guadan.guadan_data[this.del_index])[
+        "shop_data"
+      ]);
       this.dialogVisible = false;
     },
     handleClose: function() {
@@ -91,5 +96,20 @@ export default {
 <style>
 #guadan .btn_box {
   margin-bottom: 15px;
+}
+#guadan p {
+  margin-top: 10px;
+}
+#guadan .btn_box span {
+  padding: 10px;
+  display: block;
+  float: left;
+  border: solid 1px #ebeef5;
+  cursor: pointer;
+  margin-right: 10px;
+  border-radius: 4px;
+}
+#guadan .btn_box span.active {
+  border: solid 1px #66b1ff;
 }
 </style>
