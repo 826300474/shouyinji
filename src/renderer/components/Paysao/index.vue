@@ -3,7 +3,7 @@
          <el-dialog title="扫码收款" :visible.sync="dialogVisible" width="800px" :before-close="handleClose">
           <el-form>
             <el-form-item label="编码">
-              <el-input v-model="bianma" disabled="true"></el-input>
+              <el-input v-model="bianma" disabled="disabled"></el-input>
             </el-form-item>
           </el-form>
           <img :src="img_src" alt="">
@@ -26,6 +26,7 @@ export default {
   },
   created() {},
   mounted() {
+    var _this = this;
     this.$bus.$on("saoma", res => {
       this.dialogVisible = true;
       this.shoukuan = res.heji_money;
@@ -48,7 +49,7 @@ export default {
         lastCode = nextCode;
         lastTime = nextTime;
         if (e.which == 13 && code) {
-          this.bianma = code;
+          _this.bianma = code;
           return;
           var url =
             this.$comjs.commerImg +
