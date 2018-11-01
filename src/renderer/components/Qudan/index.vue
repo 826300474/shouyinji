@@ -55,12 +55,13 @@ export default {
   },
   methods: {
     chang_item: function(index) {
+      this.shop_data = [];
       this.del_index = index;
       var all_data = JSON.parse(this.$store.state.guadan.guadan_data[index])[
         "shop_data"
       ];
       for (let i = 0; i < all_data.length; i++) {
-        if (all_data[i]["active_num"] >0 ) {
+        if (all_data[i]["active_num"] > 0 ) {
           this.shop_data.push(all_data[i]);  
         }
       }

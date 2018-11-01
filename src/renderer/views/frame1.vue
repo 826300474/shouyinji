@@ -207,20 +207,6 @@ export default {
         }
       });
     }
-    // saoma: function() {
-    //   if (this.shop_data.length == 0) {
-    //     this.$alert("请先选择商品", "收款提示", {
-    //       confirmButtonText: "确定",
-    //       callback: action => {}
-    //     });
-    //     return;
-    //   }
-    //   var data = {
-    //     heji_money: this.heji_money,
-    //     order_id:order_id,
-    //   };
-    //   this.$bus.$emit("saoma", data);
-    // }
   },
   computed: {
     heji_money: function() {
